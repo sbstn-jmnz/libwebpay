@@ -4,6 +4,7 @@ PATH
     libwebpay (2.0.0)
       nokogiri (~> 1.6, >= 1.6.7.2)
       savon (~> 2)
+      signer
 
 GEM
   remote: https://rubygems.org/
@@ -45,6 +46,8 @@ GEM
       nokogiri (>= 1.8.1)
       nori (~> 2.4)
       wasabi (~> 3.4)
+    signer (1.9.0)
+      nokogiri (>= 1.5.1)
     socksify (1.7.1)
     wasabi (3.5.0)
       httpi (~> 2.0)
