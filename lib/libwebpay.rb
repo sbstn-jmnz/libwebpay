@@ -1,29 +1,20 @@
 require 'signer'
 require 'savon'
-require_relative 'verifier'
-require_relative 'configuration'
-require_relative 'webpay'
+require_relative './libwebpay/verifier'
+require_relative './libwebpay/configuration'
+require_relative './libwebpay/webpay'
 
-
-class Libwebpay
-
-	
-  @configuration
-  @webpay
+module Libwebpay  
+  class Error < StandardError; end
   
-	
-	def getWebpay(config)
-      if @webpay == nil
-        @webpay = Webpay.new(config)
-      end
-      return @webpay
+  class << self
+    def Webpay(config = {})
+    @webpay ||= Webpay.new(config)
     end
-	
-	def getConfiguration
-      if @configuration == nil
-        @configuration = Configuration.new
-      end
-      return @configuration
+  
+    def Configuration
+    @configuration ||= Configuration.new
     end
+  end
 
 end

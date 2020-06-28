@@ -15,3 +15,7 @@ v2.0.2
 
 v2.0.3
 - Se actualiza codigo de servidor Webpay
+
+v3.0.0-beta
+- Se cambia la estructura del proyecto siguiendo la convención de bundle.
+Se agrega rspec y smoke test

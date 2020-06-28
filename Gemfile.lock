@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    libwebpay (2.0.0)
+    libwebpay (3.0.0.pre.beta)
       nokogiri (~> 1.6, >= 1.6.7.2)
       savon (~> 2)
       signer
