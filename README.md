@@ -492,19 +492,16 @@ La modalidad de pago Oneclick permite al tarjetahabiente realizar pagos en el co
 
 ```ruby             
 require 'libwebpay'
-              
-#Se crea objeto para invocar la libreria
-libwebpay = Libwebpay.new
-              
+       
 #se rescatan variables de los certificados              
-config = libwebpay.getConfiguration
+config = Libwebpay.Configuration
 
 config.commerce_code = commerce_code
 config.environment = environment
 config.private_key = private_key
 config.public_cert = public_cert
 config.webpay_cert = webpay_cert
-webpay = libwebpay.getWebpay(config)
+webpay = Libwebpay.Webpay(config)
 ```
 
 
