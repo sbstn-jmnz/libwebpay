@@ -5,16 +5,14 @@ require_relative './libwebpay/configuration'
 require_relative './libwebpay/webpay'
 
 module Libwebpay  
-  class Error < StandardError; end
   
   class << self
     def Webpay(config = {})
-    @webpay ||= Webpay.new(config)
+      @webpay ||= Webpay.new(config)
     end
-  
+
     def Configuration
-    @configuration ||= Configuration.new
+      @configuration ||= Configuration.new
     end
   end
-
 end

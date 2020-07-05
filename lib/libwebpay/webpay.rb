@@ -7,61 +7,33 @@ require_relative 'webpayoneclick'
 require_relative 'webpaycomplete'
 
 class Webpay
-
-  @configuration
-  @webpayNormal
-  @webpayMallNormal
-  @webpayNullify
-  @webpayCapture
-  @webpayOneClick
-  @webpayCompleteTransaction
-
-
-    # método inicializar clase
-    def initialize(params)
-      @configuration = params
-    end
-
-    def getNormalTransaction
-      if @webpayNormal == nil
-        @webpayNormal = WebpayNormal.new(@configuration)
-      end
-      return @webpayNormal
-    end
-
-  def getMallNormalTransaction
-    if @webpayMallNormal == nil
-      @webpayMallNormal = WebpayMallNormal.new(@configuration)
-    end
-    return @webpayMallNormal
+  attr_reader :config
+  def initialize(params)
+    @config = params
   end
-
-  def getNullifyTransaction
-    if @webpayNullify == nil
-      @webpayNullify = WebpayNullify.new(@configuration)
-    end
-    return @webpayNullify
+  
+  def NormalTransaction
+    @webpayNormal ||= WebpayNormal.new(@config)
   end
-
-  def getCaptureTransaction
-    if @webpayCapture == nil
-      @webpayCapture = WebpayCapture.new(@configuration)
-    end
-    return @webpayCapture
+  
+  def MallNormalTransaction
+    @webpayMallNormal ||= WebpayMallNormal.new(@config)
   end
-
-  def getOneClickTransaction
-    if @webpayOneClick == nil
-      @webpayOneClick = WebpayOneClick.new(@configuration)
-    end
-    return @webpayOneClick
+  
+  def NullifyTransaction
+    @webpayNullify ||= WebpayNullify.new(@config)
   end
-
-  def getCompleteTransaction
-    if @webpayCompleteTransaction == nil
-      @webpayCompleteTransaction = WebpayComplete.new(@configuration)
-    end
-    return @webpayCompleteTransaction
+  
+  def CaptureTransaction
+    @webpayCapture ||= WebpayCapture.new(@config)
+  end
+  
+  def OneClickTransaction
+    @webpayOneClick ||= WebpayOneClick.new(@config)
+  end
+  
+  def CompleteTransaction
+    @webpayCompleteTransaction ||= WebpayComplete.new(@config)
   end
 end
 

@@ -2,41 +2,28 @@ require 'signer'
 require 'savon'
 require_relative "verifier"
 
-
 class WebpayNormal
-
-
     def initialize(configuration)
-
-      @wsdl_path = ''
-      @ambient = configuration.environment
-
-      case @ambient
+      environment = configuration.environment
+      @wsdl_path = case environment
         when 'INTEGRACION'
-           @wsdl_path='https://webpay3gint.transbank.cl/WSWebpayTransaction/cxf/WSWebpayService?wsdl'
+           'https://webpay3gint.transbank.cl/WSWebpayTransaction/cxf/WSWebpayService?wsdl'
         when 'CERTIFICACION'
-           @wsdl_path='https://webpay3gint.transbank.cl/WSWebpayTransaction/cxf/WSWebpayService?wsdl'
+           'https://webpay3gint.transbank.cl/WSWebpayTransaction/cxf/WSWebpayService?wsdl'
         when 'PRODUCCION'
-           @wsdl_path='https://webpay3g.transbank.cl/WSWebpayTransaction/cxf/WSWebpayService?wsdl'
+           'https://webpay3g.transbank.cl/WSWebpayTransaction/cxf/WSWebpayService?wsdl'
         else
-           #Por defecto esta el ambiente de INTEGRACION
-           @wsdl_path='https://webpay3gint.transbank.cl/WSWebpayTransaction/cxf/WSWebpayService?wsdl'
+           'https://webpay3gint.transbank.cl/WSWebpayTransaction/cxf/WSWebpayService?wsdl'
         end
-
 
       @commerce_code = configuration.commerce_code
       @private_key = OpenSSL::PKey::RSA.new(configuration.private_key)
       @public_cert = OpenSSL::X509::Certificate.new(configuration.public_cert)
       @webpay_cert = OpenSSL::X509::Certificate.new(configuration.webpay_cert)
       @client = Savon.client(wsdl: @wsdl_path)
-
     end
-
-
-    #######################################################
+    
     def initTransaction(amount, buyOrder, sessionId, urlReturn, urlFinal)
-
-
       initInput ={
           "wsInitTransactionInput" => {
               "wSTransactionType" => "TR_NORMAL_WS",
@@ -53,16 +40,13 @@ class WebpayNormal
       }
 
       req = @client.build_request(:init_transaction, message: initInput)
-
-      #Firmar documento
       document = sign_xml(req)
-      puts document
-
       begin
         response = @client.call(:init_transaction) do
-          xml document.to_xml(:save_with => 0)
-        end
+        xml document.to_xml(:save_with => 0)
+      end
       rescue Exception, RuntimeError => e
+        puts urlReturn
         puts "Ocurrio un error en la llamada a Webpay: "+e.message
         response_array ={
             "error_desc" => "Ocurrio un error en la llamada a Webpay: "+e.message
@@ -70,7 +54,6 @@ class WebpayNormal
         return response_array
       end
 
-      #Verificacion de certificado respuesta
       tbk_cert = OpenSSL::X509::Certificate.new(@webpay_cert)
 
       if !Verifier.verify(response, tbk_cert)
@@ -83,7 +66,6 @@ class WebpayNormal
         puts "El Certificado de respuesta es Valido."
       end
 
-
       token=''
       response_document = Nokogiri::HTML(response.to_s)
       response_document.xpath("//token").each do |token_value|
@@ -93,21 +75,14 @@ class WebpayNormal
       response_document.xpath("//url").each do |url_value|
         url = url_value.text
       end
-
-      puts 'token: '+token
-      puts 'url: '+url
-
       response_array ={
           "token" => token.to_s,
           "url" => url.to_s,
           "error_desc" => "TRX_OK"
       }
-
       return response_array
     end
 
-
-    ##############################################
     def getTransactionResult(token)
 
       getResultInput ={
@@ -158,7 +133,6 @@ class WebpayNormal
         puts "El Certificado de respuesta es Valido."
       end
 
-
       response_document = Nokogiri::HTML(response.to_s)
 
       accountingdate 		= response_document.xpath("//accountingdate").text
@@ -187,8 +161,6 @@ class WebpayNormal
           "vci" 							=> vci.to_s,
           "error_desc"        => 'TRX_OK'
       }
-
-
       #Realizar el acknowledge
       puts 'Se inicia acknowledgeTransaction...'
       acknowledgeTransaction(token)
@@ -197,8 +169,6 @@ class WebpayNormal
       return response_array
     end
 
-
-    ################################
     def acknowledgeTransaction(token)
       acknowledgeInput ={
           "tokenInput" => token
@@ -249,33 +219,24 @@ class WebpayNormal
         puts "El Certificado de respuesta es Valido."
       end
 
-      response_array ={
-          "error_desc"  => 'TRX_OK'
-      }
+      response_array = { "error_desc"  => 'TRX_OK'}
       return response_array
-
     end
 
-
     def sign_xml (input_xml)
-
       document = Nokogiri::XML(input_xml.body)
       envelope = document.at_xpath("//env:Envelope")
       envelope.prepend_child("<env:Header><wsse:Security xmlns:wsse='http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd' wsse:mustUnderstand='1'/></env:Header>")
       xml = document.to_s
-
       signer = Signer.new(xml)
-
       signer.cert = OpenSSL::X509::Certificate.new(@public_cert)
       signer.private_key = OpenSSL::PKey::RSA.new(@private_key)
-
       signer.document.xpath("//soapenv:Body", { "soapenv" => "http://schemas.xmlsoap.org/soap/envelope/" }).each do |node|
         signer.digest!(node)
       end
 
       signer.sign!(:issuer_serial => true)
       signed_xml = signer.to_xml
-
       document = Nokogiri::XML(signed_xml)
       x509data = document.at_xpath("//*[local-name()='X509Data']")
       new_data = x509data.clone()
@@ -284,8 +245,6 @@ class WebpayNormal
       n = Nokogiri::XML::Node.new('wsse:SecurityTokenReference', document)
       n.add_child(new_data)
       x509data.add_next_sibling(n)
-
       return document
     end
-
   end
