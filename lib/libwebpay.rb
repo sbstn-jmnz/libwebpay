@@ -1,17 +1,19 @@
+# frozen_string_literal: true
+
 require 'signer'
 require 'savon'
 require_relative './libwebpay/verifier'
 require_relative './libwebpay/configuration'
 require_relative './libwebpay/webpay'
 
-module Libwebpay  
-  
+# Base namespace for the webpay intreface
+module Libwebpay
   class << self
-    def Webpay(config = {})
+    def webpay(config = {})
       @webpay ||= Webpay.new(config)
     end
 
-    def Configuration
+    def configuration
       @configuration ||= Configuration.new
     end
   end
